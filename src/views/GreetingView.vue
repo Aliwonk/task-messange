@@ -23,7 +23,7 @@ function clickBtn(path) {
       </Button>
     </div>
     <div class="block">
-      <Button class="btn" @click="clickBtn('/auth/login')">
+      <Button class="btn" @click="clickBtn('/auth/register')">
         НАЧАТЬ РАБОТУ
       </Button>
       <Button class="btn" id="btn-support" variant="secondary">
