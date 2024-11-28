@@ -4,6 +4,7 @@ import RegisterView from '@/views/auth/RegisterView.vue'
 import GreetingView from '@/views/GreetingView.vue'
 import HomeView from '@/views/HomeView.vue'
 import InstructionView from '@/views/InstructionView.vue'
+import { checkAuth } from '@/utils/cookie.utils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +12,7 @@ const router = createRouter({
     {
       name: 'Home',
       component: HomeView,
+      path: '/',
     },
     {
       name: 'Greeting',
@@ -19,7 +21,7 @@ const router = createRouter({
     },
     {
       name: 'Login',
-      path: '/auth/login', 
+      path: '/auth/login',
       component: LoginView
     },
     {
@@ -33,6 +35,16 @@ const router = createRouter({
       component: InstructionView,
     }
   ],
-})
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  if (!checkAuth()) {
+    if (to.name == "Greeting" || to.name == "Login" || to.name == "Register") {
+      next();
+    } else {
+      router.push('/greeting');
+    }
+  } else next();
+});
+
+export default router;

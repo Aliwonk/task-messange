@@ -5,8 +5,14 @@ import { ref } from "vue";
 import Button from "@/components/ui/button/Button.vue";
 import Input from "@/components/ui/input/Input.vue";
 import Label from "@/components/ui/label/Label.vue";
+import Tabs from "@/components/ui/tabs/Tabs.vue";
+import TabsList from "@/components/ui/tabs/TabsList.vue";
+import TabsTrigger from "@/components/ui/tabs/TabsTrigger.vue";
+import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import { ChevronLeft } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
+import { API } from "@/constants";
+import { setCookie } from "@/utils/cookie.utils";
 
 // VARIABLES
 
@@ -47,24 +53,65 @@ function onChange(event) {
 }
 
 function onSubmit() {
-    for(var key in userData.value) {
-        if(userData.value[key].length == 0) {
-            emptyInputs.value[key] = true;
-        } else {
-            emptyInputs.value[key] = false;
-        }
-    }
-    
-    const checkEmpty = Object.values(emptyInputs.value).every(value => value == false);
-    if(checkEmpty) {
-        console.log(userData.value);
+  for (var key in userData.value) {
+    if (userData.value[key].length == 0) {
+      emptyInputs.value[key] = true;
     } else {
-        toast({
-            variant: "destructive",
-            description: 'Ошибка',
-        });
-        console.log("NOT")
+      emptyInputs.value[key] = false;
     }
+  }
+
+  const checkEmpty = Object.values(emptyInputs.value).every(
+    (value) => value == false
+  );
+  if (checkEmpty) {
+    const response = fetch(API.AUTH.REGISTRATION, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData.value),
+    });
+
+    response
+      .then((res) => res.json())
+      .then((dataServer) => {
+        if (dataServer.statusCode) {
+          const { statusCode, message, data } = dataServer;
+          switch (statusCode) {
+            case 201:
+              toast({
+                description: "Пользователь зарегистрирован",
+              });
+              setCookie("token", data.token, data.expires);
+              router.push("/");
+              break;
+            case 409:
+              toast({
+                variant: "destructive",
+                description: message,
+              });
+            case 400:
+              toast({
+                variant: "destructive",
+                description: message,
+              });
+              break;
+            default:
+              toast({
+                variant: "destructive",
+                description: "Ошибка сервера",
+              });
+              break;
+          }
+        }
+      });
+  } else {
+    toast({
+      variant: "destructive",
+      description: "Заполните поля",
+    });
+  }
 }
 
 function changeNextStepForm() {
@@ -76,7 +123,7 @@ function changeNextStepForm() {
 
 <template>
   <div class="header">
-    <Button variant="outline" @click="router.push('/')">
+    <Button variant="outline" @click="router.push('/greeting')">
       <ChevronLeft />
     </Button>
   </div>
