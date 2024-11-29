@@ -9,7 +9,7 @@ import Tabs from "@/components/ui/tabs/Tabs.vue";
 import TabsList from "@/components/ui/tabs/TabsList.vue";
 import TabsTrigger from "@/components/ui/tabs/TabsTrigger.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
-import { ChevronLeft } from "lucide-vue-next";
+import { ChevronLeft, Loader } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { API } from "@/constants";
 import { setCookie } from "@/utils/cookie.utils";
@@ -19,6 +19,7 @@ import { setCookie } from "@/utils/cookie.utils";
 const router = useRouter();
 const { toast } = useToast();
 const nextStepForm = ref(true);
+const isLoad = ref(false);
 const userData = ref({
   surname: "",
   name: "",
@@ -53,6 +54,7 @@ function onChange(event) {
 }
 
 function onSubmit() {
+  isLoad.value = true;
   for (var key in userData.value) {
     if (userData.value[key].length == 0) {
       emptyInputs.value[key] = true;
@@ -105,7 +107,7 @@ function onSubmit() {
               break;
           }
         }
-      });
+      }).finally(() => isLoad.value = false);
   } else {
     toast({
       variant: "destructive",
@@ -272,7 +274,10 @@ function changeNextStepForm() {
         </div>
         <div class="form-item" style="flex-direction: row; margin-top: 15px">
           <Button @click="changeNextStepForm()">Назад</Button>
-          <Button @click="onSubmit()">Зарегистрироваться</Button>
+          <Button @click="onSubmit()">
+            <Loader v-if="isLoad" />
+            <p v-else>Зарегистрироваться</p>
+          </Button>
         </div>
       </div>
     </div>
